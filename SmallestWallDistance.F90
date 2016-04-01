@@ -1,0 +1,4 @@
+program SmallestWallDistance
+
+
+end program
