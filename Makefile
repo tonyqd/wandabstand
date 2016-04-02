@@ -24,11 +24,13 @@ all: SmallestWallDistance
 
 SmallestWallDistance: 
 	$(F90) $(FOPTS) -c global.F90
+	$(F90) $(FOPTS) -c parallel.F90
 	$(F90) $(FOPTS) -c SmallestWallDistance.F90
-	$(F90) $(FEOUT) WallDistance global.o SmallestWallDistance.o $(LIBS)
+	$(F90) $(FEOUT) WallDistance global.o parallel.o SmallestWallDistance.o $(LIBS)
+	rm -rf *.o *.mod
 
 clean:
-	rm -rf *.o *.mod WallDistance 
+	rm -rf  WallDistance 
 
 
 
