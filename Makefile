@@ -12,8 +12,8 @@ CGNSlibs    = $(CGNSdir)/lib/libcgns.a
 I8OPT = -fdefault-integer-8 -fdefault-real-8
 
 # Fortran compiler and options
-F90   = mpif90 -f90=ifort
-FFLAGS = -O3 
+F90   = mpif90 -f90=ifort 
+FFLAGS = -c -O3 -fpp 
 FOPTS = -I$(CGNSinclude) -I$(HDF5include)
 LIBS  = $(CGNS_LIB) -lm
 
@@ -23,14 +23,15 @@ FEOUT = -o
 all: SmallestWallDistance
 
 SmallestWallDistance: 
-	$(F90) $(FOPTS) -c global.F90
-	$(F90) $(FOPTS) -c parallel.F90
-	$(F90) $(FOPTS) -c SmallestWallDistance.F90
-	$(F90) $(FEOUT) WallDistance global.o parallel.o SmallestWallDistance.o $(LIBS)
-	rm -rf *.o *.mod
+	$(F90) $(FOPTS) $(FFLAGS) global.F90 
+	$(F90) $(FOPTS) $(FFLAGS) parallel.F90
+	$(F90) $(FOPTS) $(FFLAGS) ConfigurationModule.F90 
+	$(F90) $(FOPTS) $(FFLAGS) ReadCGNSModule.F90
+	$(F90) $(FOPTS) $(FFLAGS) SmallestWallDistance.F90
+	$(F90) $(FEOUT) WallDistance global.o parallel.o ConfigurationModule.o ReadCGNSModule.o SmallestWallDistance.o $(LIBS)
 
 clean:
-	rm -rf  WallDistance 
+	rm -rf  *.o *.mod WallDistance 
 
 
 

@@ -1,0 +1,45 @@
+  allowed options
+  CGNSFile: name of the cgns file
+
+  ParallelMode: .true.  -> calculated with multiple processors, MetisFileName must be specified
+               .false. -> calculated with sequential version
+
+  SearchMethod: 1   -> brutal search
+                2   -> quasi-tree search (BlockLength must be given)
+                3   -> k-d tree search
+
+  WallCalculationPoint: 1  ->  quasi middle of cell (0.25*[(i.j)+(i+1,j)+(i,j+1)+(i+1,j+1)])   
+                        2  ->  directly take the coordinate of left below point (i,j)
+
+  CellCalculationPoint: 1  ->  quasi center of cell (0.125*[(i.j)+(i+1,j)+.....]) 
+                        2  ->  directly take the coordinate of vertex point (i,j,k)
+                        
+  DistanceCalcMode: 1  ->  direct point distance calculation   
+                    2  ->  vector based point to surface distance calculation 
+                    3  ->  point to surface distance with considering extreme case 
+                    
+  DistanceVectorMode: 1  -> DO NOT!! write the distance vector into cgns file         
+                      2  -> write the distance vector into cgns file    
+
+  InletInput: .true.  -> inlet/outlet information specified in the file inlet.txt
+              .false. -> directly read inlet/outlet information from cgnsfile
+ 
+  
+&MAIN
+    CGNSFile = 'test'
+    ParallelMode = .true. 
+    SearchMethod = 3
+    WallCalculationPoint = 1 
+    CellCalculationPoint = 1
+    DistanceCalcMode = 3 
+    DistanceVectorMode = 1 
+    InletInput = .false.
+&END
+
+&parallel
+    MetisFileName = ''
+&END
+
+&quasitree
+    BlockLength = 1
+&END
