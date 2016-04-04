@@ -21,8 +21,19 @@
   DistanceVectorMode: 1  -> DO NOT!! write the distance vector into cgns file         
                       2  -> write the distance vector into cgns file    
 
-  InletInput: .true.  -> inlet/outlet information specified in the file inlet.txt
+  InletInput: .true.  -> inlet/outlet information specified in the file inlet.txt;
+                         InletFormat in inlet.txt must be specified (1 or 2)
               .false. -> directly read inlet/outlet information from cgnsfile
+              
+  InletFormat: 1  -> complex information about inlet/outlet surface 
+                     e.g. 
+                     1 (zone index)
+                     1   1   1
+                     1   23  23 
+               2  -> simplified syntex   
+                     e.g. 
+                     2 (zone index)
+                     1 jmax
  
   
 &MAIN
@@ -42,4 +53,8 @@
 
 &quasitree
     BlockLength = 1
+&END
+
+&INLET
+    InletFormat = 1
 &END

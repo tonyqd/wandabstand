@@ -55,13 +55,25 @@ contains
         call MPI_ABORT(MPI_COMM_WORLD, errorcode, ierr)
       end if
     end if
-    !---- if multiple processors involved, read metis information
+
+    !---- if quasi-tree search method is chosen, the blocklength in quasi-tree search must be given
     if ( SearchMethod .eq. 2) then
       rewind( io_config )
       read( io_config, nml=quasitree, iostat=ierr )
       if( ierr /= 0 )then
         close( io_config )
         print *, "ERROR ! global control file "//trim(file_config)//" failed to read for namelist quasitree!"
+        call MPI_ABORT(MPI_COMM_WORLD, errorcode, ierr)
+      end if
+    end if
+
+    !---- if input is given, format must be chosen
+    if ( InletInput .eq. .true.) then
+      rewind( io_config )
+      read( io_config, nml=inlet, iostat=ierr )
+      if( ierr /= 0 )then
+        close( io_config )
+        print *, "ERROR ! global control file "//trim(file_config)//" failed to read for namelist inlet!"
         call MPI_ABORT(MPI_COMM_WORLD, errorcode, ierr)
       end if
     end if
