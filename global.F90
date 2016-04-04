@@ -10,7 +10,15 @@ module global
 
   ! --- parameters which are read from file parameters.txt
 
+  integer               , parameter :: n_proc_digits  = 4                             , & ! number of digits for processes
+                                       n_block_digits = 6                             , & ! number of digits for blocks
+                                       n_conn_digits  = 8                             , & ! number of digits for connections
+                                       n_iter_digits  = 10                                ! number of digits for iterations
+
   integer                           :: io_config
+
+  character(len=32)                 :: folder_log        = './logs'                    ! folder for concurrent log files, this is a namelist variable
+
 
   character(len=32)                 :: CGNSFile
 
@@ -27,8 +35,9 @@ module global
 
   real(8)                           :: BlockLength
 
-  character(len=*) , parameter      :: file_config = 'parameters.txt'
-  character(len=*) , parameter      :: InletFile = 'Inlet.txt'
+  character(len=*) , parameter      :: file_config = 'parameters.txt'                 , &
+                                       InletFile = 'Inlet.txt'                        , &
+                                       file_par_log      = 'WallDistance.out'              ! parallel log file
 
   namelist /MAIN/                      CGNSFile                                       ,&
                                        ParallelMode                                   ,&
@@ -43,6 +52,26 @@ module global
   namelist /quasitree/                 BlockLength
   namelist /inlet/                     InletFormat
 
+  !---- file specifiers
+
+  integer                           :: io_log                                             ! file ID for parallel log output
+
+
+  !---- formating codes
+                                       ! formatting codes for parallel log file
+  character(len=*) , parameter      :: fmt_raw   =     "(A7,'  ',A10,' | ',"          , & ! raw code: use for custom messages containing complex info
+                                       fmt_err   = "('  ERROR  ',A10,' | ',A)"        , & ! tag message as error
+                                       fmt_warn  = "('WARNING  ',A10,' | ',A)"        , & ! tag message as warning
+                                       fmt_debug = "('  DEBUG  ',A10,' | ',A)"        , & ! tag message as debug info
+                                       fmt_std   = "('         ',A10,' | ',A)"        , & ! normal message
+                                       ! formatting codes for date & time
+                                       fmt_date  = "I2.2,'.',I2.2,'.',I4.4"           , & ! DD.MM.YYYY
+                                       fmt_time  = "I2.2,':',I2.2"                    , & ! HH:MM
+                                       fmt_date_and_time = fmt_date//"' '"//fmt_time  , & ! DD.MM.YYYY HH:MM
+                                       fmt_bar  = "==========================================================================="
+
+                                       ! dynamic formatting codes (see ConfigurationModule for assignment)
+  character(len=4)                  :: fmt_proc, fmt_block, fmt_conn, fmt_base            ! process, block, connection & cgns bases
 
   ! --- parameters related to the cgns file
   integer                           :: CgnsIndex                                      ,&

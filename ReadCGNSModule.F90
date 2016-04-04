@@ -59,6 +59,10 @@ contains
 
     end do
 
+    ! Read the Inlet/Outlet boundary conditions directly from cgns file
+
+
+
     !If inlet/outlet information are specified from Input.txt, then read them from Input.txt
     If(InletInput == .true.) then
         call GetInletSize(12, InletFile, InletSize, InletFormat)

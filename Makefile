@@ -25,10 +25,12 @@ all: SmallestWallDistance
 SmallestWallDistance: 
 	$(F90) $(FOPTS) $(FFLAGS) global.F90 
 	$(F90) $(FOPTS) $(FFLAGS) parallel.F90
+	$(F90) $(FOPTS) $(FFLAGS) helpers.F90
+	$(F90) $(FOPTS) $(FFLAGS) LogModule.F90
 	$(F90) $(FOPTS) $(FFLAGS) ConfigurationModule.F90 
 	$(F90) $(FOPTS) $(FFLAGS) ReadCGNSModule.F90
 	$(F90) $(FOPTS) $(FFLAGS) SmallestWallDistance.F90
-	$(F90) $(FEOUT) WallDistance global.o parallel.o ConfigurationModule.o ReadCGNSModule.o SmallestWallDistance.o $(LIBS)
+	$(F90) $(FEOUT) WallDistance global.o parallel.o helpers.o LogModule.o ConfigurationModule.o ReadCGNSModule.o SmallestWallDistance.o $(LIBS)
 
 clean:
 	rm -rf  *.o *.mod WallDistance 

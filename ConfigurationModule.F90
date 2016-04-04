@@ -78,6 +78,12 @@ contains
       end if
     end if
 
+    !---- initialize formattings
+
+    write( fmt_proc,  '("I",I1,".",I1)') n_proc_digits,  n_proc_digits                    ! gives I4.4 (for 4 digits proc IDs)
+    write( fmt_block, '("I",I1,".",I1)') n_block_digits, n_block_digits                   ! gives I6.6 (for 6 digits block IDs)
+
+
   end subroutine ReadConfigurationFile
 
 

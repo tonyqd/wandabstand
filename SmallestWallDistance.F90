@@ -5,12 +5,15 @@ program SmallestWallDistance
   use parallel
   use ConfigurationModule
   use ReadCGNSModule
+  use LogModule
 
   implicit none
 
   call InitializeParallelModule()
 
   call ReadConfigurationFile()
+
+  call InitializeLogModule()
 
   call ReadGridMetaData()
 
@@ -26,7 +29,7 @@ write(*,*)                             CGNSFile                                 
 
 
 
-
+  call DestroyLogModule()
 
   call DestroyParallelModule()
 

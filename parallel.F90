@@ -67,4 +67,39 @@ contains
 
   end subroutine DestroyParallelModule
 
+  function ParallelFilename(filename) result(string)
+  !
+  ! create filename with ending for each process
+  !
+  ! this function appends to a filename the process_id
+  ! of the calling process (e.g. file.dat -> file_0000.dat)
+  ! respecting the global variable n_proc_digits for the
+  ! number of trailing digits.
+  !
+    implicit none
+
+    character(len=*)   , intent(in) :: filename
+    character(len=2*len(filename))  :: string
+
+    character(len=len(filename))    :: basename, ending
+    integer                         :: last_point_position
+
+    last_point_position = index(filename,'.',.true.)
+    ! filename has an extension, digits will be inserted between name and extension
+    if (last_point_position /= 0) then
+       basename = filename(1:last_point_position-1)
+       ending   = filename(last_point_position:)
+
+       write( string, '(A,"_",'//fmt_proc//',A)' ) trim(basename), MPI_RANK, trim(ending)
+    ! filename has no extensions, digits will be simply appended to filename
+    else
+       write( string, '(A,"_",'//fmt_proc) trim(filename), MPI_RANK
+    end if
+
+    ! trim leading and trailing whitespaces
+    string = trim(string)
+
+  end function ParallelFilename
+
+
 end module parallel
