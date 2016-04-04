@@ -13,14 +13,17 @@ module global
   integer               , parameter :: n_proc_digits  = 4                             , & ! number of digits for processes
                                        n_block_digits = 6                             , & ! number of digits for blocks
                                        n_conn_digits  = 8                             , & ! number of digits for connections
-                                       n_iter_digits  = 10                                ! number of digits for iterations
+                                       n_iter_digits  = 10                            , & ! number of digits for iterations
+                                       n_file_max     = 10                                ! maximum allowed input cgns files
 
   integer                           :: io_config
 
   character(len=32)                 :: folder_log        = './logs'                    ! folder for concurrent log files, this is a namelist variable
 
 
-  character(len=32)                 :: CGNSFile
+  character(len=32)                 :: CGNSFileType
+  character(len=256)                :: CGNSFiles(n_file_max)
+  integer                           :: n_cgnsfiles
 
   logical                           :: ParallelMode
   character(len=64)                 :: MetisFileName
@@ -39,13 +42,14 @@ module global
                                        InletFile = 'Inlet.txt'                        , &
                                        file_par_log      = 'WallDistance.out'              ! parallel log file
 
-  namelist /MAIN/                      CGNSFile                                       ,&
-                                       ParallelMode                                   ,&
-                                       SearchMethod                                   ,&
-                                       WallCalculationPoint                           ,&
-                                       CellCalculationPoint                           ,&
-                                       DistanceCalcMode                               ,&
-                                       DistanceVectorMode                             ,&
+  namelist /MAIN/                      CGNSFileType                                   , &
+                                       CGNSFiles                                      , &
+                                       ParallelMode                                   , &
+                                       SearchMethod                                   , &
+                                       WallCalculationPoint                           , &
+                                       CellCalculationPoint                           , &
+                                       DistanceCalcMode                               , &
+                                       DistanceVectorMode                             , &
                                        InletInput
 
   namelist /parallel/                  MetisFileName
@@ -74,21 +78,21 @@ module global
   character(len=4)                  :: fmt_proc, fmt_block, fmt_conn, fmt_base            ! process, block, connection & cgns bases
 
   ! --- parameters related to the cgns file
-  integer                           :: CgnsIndex                                      ,&
-                                       CgnsBase                                       ,&
-                                       CgnsCoord                                      ,&
+  integer                           :: CgnsBase                                       , &
+                                       CgnsCoord                                      , &
                                        CgnsConnectivity
 
-  integer                           :: nBases                                         ,& ! total number of bases in the cgns file
-                                       nZones                                            ! total number of zones in BASE 1
-
+  integer, allocatable, dimension(:):: nBases                                         , & ! total number of bases in each cgns file!
+                                       nZones                                         , & ! total number of zones in each cgns file!
+                                       CgnsIndex
+  integer                           :: nZones_total                                       ! Total number of zones across all the cgns files
   ! --- Inlet Information
   integer                           :: InletSize
 
 
   ! --- Variables for storing size information for all zones
   integer,allocatable, &
-                   dimension(:,:,:) :: sizeInformation
+                 dimension(:,:,:,:) :: SizeInformation
   integer,allocatable, &
                        dimension(:) :: InletBlockNum
   integer,allocatable, &

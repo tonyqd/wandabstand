@@ -35,7 +35,11 @@ contains
 
     ! each process writes a separate log file to folder_log
     filename = ParallelFilename(trim(folder_log)//'/'//trim(file_par_log))
+
+    call MPI_Barrier(MPI_COMM_WORLD, ier )
+
     open( newunit=io_log, file=filename, iostat=ierr, status="replace", action="write" )
+
     if ( ier /=0 )then
       write(*,*) 'ERROR! can not initialize log file!!'
       call MPI_ABORT(MPI_COMM_WORLD, errorcode, ier)

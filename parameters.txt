@@ -1,5 +1,6 @@
   allowed options
-  CGNSFile: name of the cgns file
+  CGNSFileType: allowed type: 'single', 'multiple'
+  CGNSFiles: Name of the 
 
   ParallelMode: .true.  -> calculated with multiple processors, MetisFileName must be specified
                .false. -> calculated with sequential version
@@ -37,7 +38,8 @@
  
   
 &MAIN
-    CGNSFile = 'test'
+    CGNSFileType = 'single'
+    CGNSFiles    = 'side_a.cgns' , 'side_b.cgns'
     ParallelMode = .true. 
     SearchMethod = 3
     WallCalculationPoint = 1 

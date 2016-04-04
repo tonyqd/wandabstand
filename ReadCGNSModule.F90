@@ -23,41 +23,54 @@ contains
     include 'cgnslib_f.h'
 
     integer                         :: ier
-    integer                         :: i,j,k
+    integer                         :: i,j,k,l,m,n
     integer                         :: errorcode
+    integer                         :: Fileindex
 
 
-    call cg_open_f(CGNSFile, MODE_MODIFY, CgnsIndex, ier)
-    if ( ier /=0 )then
-      write(*,*) 'ERROR! can not open CGNS file!!'
-      call MPI_ABORT(MPI_COMM_WORLD, errorcode, ier)
-    end if
+    !---- allocate memory for nzones and nBases
+    allocate(nBases(n_cgnsfiles))
+    allocate(nZones(n_cgnsfiles))
+    allocate(CgnsIndex(n_cgnsfiles))
 
-    !check the CGNS file information
-    call cg_nbases_f(CgnsIndex, nBases, ier)
-    if ( nBases == 1) then
-        CgnsBase = 1
-    else
-        write(*,*) 'There are more than one Base, be careful only the first Base is proceeded!'
-        CgnsBase = 1
-    end if
+    nZones_total = 0
 
-    call cg_nzones_f(CgnsIndex, CgnsBase, nZones, ier)
-    if (nZones <= 0) then
-        write(*,*) 'the number of zones must be greater or equal than 1 '
-    end if
+    do Fileindex = 1, n_cgnsfiles
+      call cg_open_f(CGNSFiles(Fileindex), MODE_MODIFY, CgnsIndex(Fileindex), ier)
+      if ( ier /=0 )then
+        write(*,*) 'ERROR! can not open CGNS file!!'
+        call MPI_ABORT(MPI_COMM_WORLD, errorcode, ier)
+      end if
 
-    !Read the size information for all zones
-    allocate(SizeInformation(nZones,3,3))
-    do CgnsZone = 1, nZones
-        call cg_zone_read_f(CgnsIndex, CgnsBase, CgnsZone, ZoneName, ISize, ier)
-        do i = 1, 3
-            do j = 1,3
-                SizeInformation(CgnsZone,i,j) = ISize(i,j)
-            end do
-        end do
+      !check the CGNS file information
+      call cg_nbases_f(CgnsIndex(Fileindex), nBases(Fileindex), ier)
+      if ( nBases(Fileindex) == 1) then
+          CgnsBase = 1
+      else
+          write(*,*) 'There are more than one Base, be careful only the first Base is proceeded!'
+          CgnsBase = 1
+      end if
 
+      call cg_nzones_f(CgnsIndex(Fileindex), CgnsBase, nZones(Fileindex), ier)
+      if (nZones(Fileindex) <= 0) then
+          write(*,*) 'the number of zones must be greater or equal than 1 '
+      end if
+
+      nZones_total = nZones_total + nZones(Fileindex)
     end do
+
+      !Read the size information for all zones in all cgns files
+      allocate(SizeInformation(n_cgnsfiles,nZones_total,3,3))
+      do i = 1, n_cgnsfiles
+        do CgnsZone = 1, nZones(i)
+            call cg_zone_read_f(CgnsIndex(i), CgnsBase, CgnsZone, ZoneName, ISize, ier)
+            !do j = 1, 3
+             !   do k = 1,3
+                    SizeInformation(i,CgnsZone,:,:) = ISize(:,:)
+              !  end do
+           ! end do
+        end do
+      end do
 
     ! Read the Inlet/Outlet boundary conditions directly from cgns file
 

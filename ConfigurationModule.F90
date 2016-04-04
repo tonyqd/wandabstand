@@ -20,6 +20,8 @@ contains
 
     logical                         :: file_found
     integer                         :: ierr, errorcode
+    integer                         :: temp_filenum, temp_length
+    integer                         :: i
 
 
     !---- open global configuration file
@@ -44,6 +46,15 @@ contains
       print *, "ERROR ! global control file "//trim(file_config)//" failed to read for namelist main!"
       call MPI_ABORT(MPI_COMM_WORLD, errorcode, ierr)
     end if
+
+    !---- check the number of cgns input files
+    ! be careful, if the input cgns file name length should not be 256 characters. But this is normally also not the case.
+    temp_filenum = 0
+    do i = 1, size(CGNSFiles)
+      if(len(trim(CGNSFiles(i))) .ne. 256)  temp_filenum = temp_filenum+1
+    end do
+
+    n_cgnsfiles = temp_filenum
 
     !---- if multiple processors involved, read metis information
     if ( ParallelMode .eq. .true. ) then
@@ -82,7 +93,6 @@ contains
 
     write( fmt_proc,  '("I",I1,".",I1)') n_proc_digits,  n_proc_digits                    ! gives I4.4 (for 4 digits proc IDs)
     write( fmt_block, '("I",I1,".",I1)') n_block_digits, n_block_digits                   ! gives I6.6 (for 6 digits block IDs)
-
 
   end subroutine ReadConfigurationFile
 

@@ -18,7 +18,7 @@ program SmallestWallDistance
   call ReadGridMetaData()
 
 
-write(*,*)                             CGNSFile                                       ,&
+write(*,*)                             CGNSFileType                                       ,&
                                        ParallelMode                                   ,&
                                        SearchMethod                                   ,&
                                        WallCalculationPoint                           ,&
