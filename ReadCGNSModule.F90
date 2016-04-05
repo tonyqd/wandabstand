@@ -50,6 +50,8 @@ contains
 
     nZones_total = 0
 
+    write(io_log, fmt_std) '',''
+    write(io_log, fmt_std) '', 'Start reading cgns files!'
     do Fileindex = 1, n_cgnsfiles
       call cg_open_f(CGNSFiles(Fileindex), MODE_MODIFY, CgnsIndex(Fileindex), ier)
       if ( ier /=0 )then
@@ -73,7 +75,8 @@ contains
 
       nZones_total = nZones_total + nZones(Fileindex)
     end do
-
+      write(io_log, fmt_raw//' I0, " cgns files are found and ",I0, " zones in total are found!")'),&
+            '', 'INIT', n_cgnsfiles,nZones_total
       !Read the size information for all zones in all cgns files
       allocate(n_bocos(n_cgnsfiles,nZones_total))
       allocate(SizeInformation(n_cgnsfiles,nZones_total,3,3))
@@ -86,6 +89,8 @@ contains
 
     ! Read the Inlet/Outlet boundary conditions directly from cgns file
     ! get the number of boundary conditions in each zone
+    write(io_log, fmt_std) '',''
+    write(io_log, fmt_std) 'INLET', 'Start proceeding Inlet/Outlet/Interface boundary information!'
     do i = 1, n_cgnsfiles
       do j = 1, nZones(i)
         call cg_nbocos_f( CgnsIndex(i), CgnsBase, j, temp_n_bocos, ier)
@@ -97,7 +102,7 @@ contains
       end do
     end do
 
-    !check the boundary type for each boundary
+    !check the boundary type for each boundary and save the point range information for that
     allocate(InletBlockIndex1(nZones_total*6,2))
     allocate(InletRange1(nZones_total*6,6))
     temp_counter = 0
