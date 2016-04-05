@@ -9,6 +9,8 @@ module ReadCGNSModule
 
   public ReadGridMetaData
 
+  !public cg_int
+
   character(len=32)                 :: ZoneName
   integer,dimension(3,3)            :: ISize
   integer                           :: CgnsZone
@@ -22,10 +24,23 @@ contains
     implicit none
     include 'cgnslib_f.h'
 
+    integer             , parameter :: cg_int = kind(CG_null)
     integer                         :: ier
     integer                         :: i,j,k,l,m,n
     integer                         :: errorcode
-    integer                         :: Fileindex
+    integer                         :: Fileindex                                , &
+                                       temp_n_bocos
+
+    character(len=32)               :: BocoFamily
+    integer                         :: BocoType, BocoRange(3,2), BocoNormal(3)
+    character(len=32)               :: BocoName
+    integer                         :: ptset_type, NormalDataType, ndataset
+    integer(cg_int)                 :: npnts, NormalListSize
+    integer(cg_int), dimension(3,2) :: pnts, NormalList(1)
+
+    logical                         :: found
+    integer                         :: temp_counter
+    integer                         :: boundarynum1, boundarynum2
 
 
     !---- allocate memory for nzones and nBases
@@ -60,27 +75,82 @@ contains
     end do
 
       !Read the size information for all zones in all cgns files
+      allocate(n_bocos(n_cgnsfiles,nZones_total))
       allocate(SizeInformation(n_cgnsfiles,nZones_total,3,3))
       do i = 1, n_cgnsfiles
         do CgnsZone = 1, nZones(i)
-            call cg_zone_read_f(CgnsIndex(i), CgnsBase, CgnsZone, ZoneName, ISize, ier)
-            !do j = 1, 3
-             !   do k = 1,3
-                    SizeInformation(i,CgnsZone,:,:) = ISize(:,:)
-              !  end do
-           ! end do
+          call cg_zone_read_f(CgnsIndex(i), CgnsBase, CgnsZone, ZoneName, ISize, ier)
+          SizeInformation(i,CgnsZone,:,:) = ISize(:,:)
         end do
       end do
 
     ! Read the Inlet/Outlet boundary conditions directly from cgns file
+    ! get the number of boundary conditions in each zone
+    do i = 1, n_cgnsfiles
+      do j = 1, nZones(i)
+        call cg_nbocos_f( CgnsIndex(i), CgnsBase, j, temp_n_bocos, ier)
+        if ( ier /=0 )then
+          write(*,*) 'ERROR! can not read number of boundary conditions!!'
+          call MPI_ABORT(MPI_COMM_WORLD, errorcode, ier)
+        end if
+        n_bocos(i,j) = temp_n_bocos
+      end do
+    end do
 
+    !check the boundary type for each boundary
+    allocate(InletBlockIndex1(nZones_total*6,2))
+    allocate(InletRange1(nZones_total*6,6))
+    temp_counter = 0
+    do i = 1, n_cgnsfiles
+      do j = 1, nZones(i)
+        do k = 1, n_bocos(i,j)
+          found = .false.
+          call cg_boco_info_f(CgnsIndex(i), CgnsBase, j, k, BocoName, BocoType, &
+               ptset_type, npnts, BocoNormal, NormalListSize, NormalDataType, ndataset, ier)
 
+          if ( ier /=0 )then
+            write(*,*) 'ERROR! can not read boundary condition information!!'
+            call MPI_ABORT(MPI_COMM_WORLD, errorcode, ier)
+          end if
+
+          select case ( BocoType )
+            case ( BCInflow, BCInflowSubsonic, BCInflowSupersonic )
+              write( io_log, fmt_raw//'"recognized inlet boundary on file ",I0, " zone ", I0, " surface ", I0)') &
+                    '','', i, j, k
+              found = .true.
+            case( BCOutflow, BCOutflowSubsonic, BCOutflowSupersonic )
+              write( io_log, fmt_raw//'"recognized outlet boundary on file ",I0, " zone ", I0, " surface ", I0)') &
+                    '','', i, j, k
+              found = .true.
+            case( BCGeneral )
+              write( io_log, fmt_raw//'"recognized block interface on file ",I0, " zone ", I0, " surface ", I0)') &
+                    '','', i, j, k
+              found = .true.
+          end select
+
+          if ( found .eq. .true. ) then
+            call cg_boco_read_f(CgnsIndex(i), CgnsBase, j, k, pnts, NormalList, ier)
+            temp_counter = temp_counter +1
+            InletBlockIndex1(temp_counter,1) = i
+            InletBlockIndex1(temp_counter,2) = j
+            InletRange1(temp_counter,1) = pnts(1,1)
+            InletRange1(temp_counter,2) = pnts(2,1)
+            InletRange1(temp_counter,3) = pnts(3,1)
+            InletRange1(temp_counter,4) = pnts(1,2)
+            InletRange1(temp_counter,5) = pnts(2,2)
+            InletRange1(temp_counter,6) = pnts(3,2)
+          end if
+        end do
+      end do
+    end do
+
+    boundarynum1 = temp_counter
 
     !If inlet/outlet information are specified from Input.txt, then read them from Input.txt
     If(InletInput == .true.) then
-        call GetInletSize(12, InletFile, InletSize, InletFormat)
-        allocate(InletBlockNum(InletSize))
-        allocate(InletRange(InletSize,6))
+        call GetInletSize(12, InletFile, boundarynum2, InletFormat)
+        allocate(InletBlockIndex2(boundarynum2,2))
+        allocate(InletRange2(boundarynum2,6))
         if(InletFormat == 1) then
             !call GetInletInformation1(13, InletFile, InletSize, InletBlockNum, InletRange)
         else if(InletFormat == 2) then

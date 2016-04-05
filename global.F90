@@ -86,18 +86,17 @@ module global
                                        nZones                                         , & ! total number of zones in each cgns file!
                                        CgnsIndex
   integer                           :: nZones_total                                       ! Total number of zones across all the cgns files
-  ! --- Inlet Information
-  integer                           :: InletSize
 
 
   ! --- Variables for storing size information for all zones
   integer,allocatable, &
                  dimension(:,:,:,:) :: SizeInformation
   integer,allocatable, &
-                       dimension(:) :: InletBlockNum
+                     dimension(:,:) :: n_bocos                                            ! Store the number of boundary conditions for every file and every zone
   integer,allocatable, &
-                     dimension(:,:) :: InletRange                                         ! InletRange(:,6) 1-3 Pointrange Begin, 4-6 Pointrange End, for vertex number information!!!
-
+                     dimension(:,:) :: InletBlockIndex1, InletBlockIndex2                 ! InletBlockIndex(:,2) 1: File index  2: Zone index
+  integer,allocatable, &
+                     dimension(:,:) :: InletRange1, InletRange2                           ! InletRange(:,6) 1-3 Pointrange Begin, 4-6 Pointrange End, for vertex number information!!!
 
 
 
